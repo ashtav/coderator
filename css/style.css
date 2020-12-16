@@ -1,0 +1,17 @@
+#textarea {
+  width: 100%;
+  min-height: 500px;
+  border: 1px #ddd solid;
+  padding: 15px;
+}
+
+#result {
+  width: 100%;
+  min-height: 500px;
+  background-color: #f1f1f1;
+  padding: 15px;
+  border: 1px #ddd solid;
+  border-radius: 3px;
+}
+
+/*# sourceMappingURL=style.css.map */
