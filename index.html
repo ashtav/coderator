@@ -3,25 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flutterator</title>
+    <title>Coderator</title>
+    
+    <link rel="stylesheet" href="assets/css/libraries/tabler.css">
+    <link rel="stylesheet" href="assets/css/libraries/demo.css">
+    <link rel="stylesheet" href="assets/css/line-awesome.min.css">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" /> -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container my-5">
+        <div class="mb-3">
+            <div class="form-label">Convert To</div>
+            <div>
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" checked name="type" value="map">
+                <span class="form-check-label">Map</span>
+              </label>
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="type" value="tec">
+                <span class="form-check-label">TextEditingController</span>
+              </label>
+              <label class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="type" value="fn">
+                <span class="form-check-label">FocusNode</span>
+              </label>
+            </div>
+          </div>
+
         <div class="row">
             <div class="col-6">
-                <textarea id="textarea" class="form-control"></textarea>
+                <textarea id="from" class="form-control" placeholder="Type something (ex: name, email, etc...)"></textarea>
+                <div>
+                    <button class="btn btn-outline-danger my-3" onclick="_clear()"> <i class="la la-lg la-times mr-1"></i> Bersihkan</button>
+                </div>
             </div>
             <div class="col-6">
-                <div id="result"></div>
-                <button class="btn btn-outline-primary my-3" id="copy">Salin Kode</button>
+                <div id="to"></div>
+                <button class="btn btn-outline-primary my-3" onclick="copyToClipboard('to')"> <i class="la la-lg la-copy mr-1"></i> Salin Kode</button>
             </div>
         </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-    <script src="js/script.js"></script>
+    <script src="js/coderator.js"></script>
+    <script>
+
+        let coderator = new Coderator(),
+            type = 'map'
+
+        // add event to checkbox
+        document.querySelectorAll('.form-check-input').forEach(el => {
+            el.addEventListener('click', function(){
+                type = this.value
+
+                let from = document.querySelector('#from').value
+                if(from.toString().trim() != '') convertTo(from)
+            })
+        })
+
+        convertTo = (value) => {
+            switch (type) {
+                case 'map': {
+                    coderator.toMap({
+                        'value': value,
+                        'target': '#to'
+                    })
+                    
+                    break;
+                }
+                
+                case 'tec': {
+                    coderator.toTec({
+                        'value': value,
+                        'target': '#to'
+                    })
+                } break;
+            
+                default: {
+                    coderator.toFn({
+                        'value': value,
+                        'target': '#to'
+                    })
+                    break;
+                }
+            }
+        }
+        
+        // add event to textarea
+        document.querySelector('#from').addEventListener('keyup', function() {
+            convertTo(this.value)
+            if(this.value.toString().trim() == '') document.querySelector('#to').innerHTML = ''
+        })
+
+        copyToClipboard = (id) => {
+            let range = document.createRange();
+            range.selectNode(document.getElementById(id));
+            window.getSelection().removeAllRanges(); // clear current selection
+            window.getSelection().addRange(range); // to select text
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();// to deselect
+        }
+
+        _clear = () => {
+            let from = document.querySelector('#from')
+            document.querySelector('#to').innerHTML = ''
+
+            from.value = ''
+            from.focus()
+        }
+
+
+    </script>
 </body>
 </html>
