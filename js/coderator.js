@@ -19,7 +19,7 @@ class Coderator {
                 res += s
             }
 
-            doc.querySelector(params.target).innerText = 'Map<String, dynamic> formData = {'+res.replace(/,\s*$/, "")+'}';
+            doc.querySelector(params.target).innerText = 'Map<String, dynamic> map = {'+res.replace(/,\s*$/, "")+'};';
     }
 
     // TextEditingController
@@ -47,5 +47,18 @@ class Coderator {
         }
 
         doc.querySelector(params.target).innerText = 'FocusNode '+res.replace(/,\s*$/, "")+';'
+    }
+
+    // Map<String, FocusNode>
+    toMFn(params){
+        let res = '',
+            split = params.value.replace(/ /g,'').split(',')
+
+            for (let i = 0; i < split.length; i++) {
+                let s = '"'+split[i]+'": FocusNode(), '
+                res += s
+            }
+
+            doc.querySelector(params.target).innerText = 'Map<String, FocusNode> mapNode = {'+res.replace(/,\s*$/, "")+'};';
     }
 }
