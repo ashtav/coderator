@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coderator</title>
-    
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="assets/css/libraries/tabler.css">
     <link rel="stylesheet" href="assets/css/libraries/demo.css">
     <link rel="stylesheet" href="assets/css/line-awesome.min.css">
@@ -12,122 +15,271 @@
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.3/css/bootstrap.min.css" integrity="sha512-oc9+XSs1H243/FRN9Rw62Fn8EtxjEYWHXRvjS43YtueEewbS6ObfXcJNyohjHqVKFPoXXUxwc+q1K7Dee6vv9g==" crossorigin="anonymous" /> -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <div class="container my-5">
-        <div class="mb-3">
-            <div class="form-label">Convert To</div>
-            <div>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" checked name="type" value="map">
-                <span class="form-check-label">Map</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="type" value="tec">
-                <span class="form-check-label">TextEditingController</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="type" value="fn">
-                <span class="form-check-label">FocusNode</span>
-              </label>
-              <label class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="type" value="mfn">
-                <span class="form-check-label">Map FocusNode</span>
-              </label>
-            </div>
-          </div>
 
-        <div class="row">
-            <div class="col-6">
-                <textarea id="from" class="form-control" placeholder="Ketik sesuatu (eg: product_name, email, etc...)"></textarea>
+<body>
+    <div id="app">
+        <div class="container my-5">
+            <div class="mb-3">
+                <div class="form-label">Convert To</div>
                 <div>
-                    <button class="btn btn-outline-danger my-3" onclick="_clear()"> <i class="la la-lg la-times mr-1"></i> Bersihkan</button>
+                    <label class="form-check form-check-inline" v-for="(data,i) in options" :key="i">
+                        <input class="form-check-input" type="radio" name="type" v-model="optionSelected" :value="data"
+                            :checked="i == 0">
+                        <span class="form-check-label" v-html="data"></span>
+                    </label>
                 </div>
             </div>
-            <div class="col-6">
-                <div id="to"></div>
-                <button class="btn btn-outline-primary my-3" onclick="copyToClipboard('to')"> <i class="la la-lg la-copy mr-1"></i> Salin Kode</button>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <textarea id="from" class="form-control" v-model="plainText"
+                        :placeholder="placeholder"></textarea>
+                    <div>
+                        <button class="btn btn-outline-danger my-3" :disabled="plainText == ''" @click="plainText = ''"> <i
+                                class="la la-lg la-times mr-1"></i> Bersihkan</button>
+
+                                <label class="form-check form-switch ml-3" style="display: inline-block">
+                                    <input class="form-check-input" type="checkbox" v-model="isUseVar">
+                                    <span class="form-check-label">Use Var</span>
+                                  </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div id="to" v-text="result"></div>
+                    <button class="btn btn-outline-primary my-3" :disabled="result == ''" @click="copyToClipboard('to')"> <i
+                            class="la la-lg la-copy mr-1"></i> Salin Kode</button>
+
+                            <span class="text-muted ml-3" v-html="message"></span>
+                </div>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-    <script src="js/coderator.js"></script>
+
+    <!-- <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <!-- <script src="js/coderator.js"></script> -->
     <script>
+        new Vue({
+            el: '#app',
 
-        let coderator = new Coderator(),
-            type = 'map'
+            data() {
+                return {
+                    options: [
+                        'Map', 'TextEditingController', 'FocusNode', 'Map TextEditingController',
+                        'Map FocusNode','GetX Builder'
+                    ],
 
-        // add event to checkbox
-        document.querySelectorAll('.form-check-input').forEach(el => {
-            el.addEventListener('click', function(){
-                type = this.value
+                    optionSelected: 'Map',
+                    plainText: '',
+                    result: '',
+                    isUseVar: false,
 
-                let from = document.querySelector('#from').value
-                if(from.toString().trim() != '') convertTo(from)
-            })
-        })
-
-        convertTo = (value) => {
-            switch (type) {
-                case 'map': {
-                    coderator.toMap({
-                        'value': value,
-                        'target': '#to'
-                    })
-                    
-                    break;
+                    placeholder: 'Ketik sesuatu (eg: product_name, email, etc...)',
+                    message: ''
                 }
-                
-                case 'tec': {
-                    coderator.toTec({
-                        'value': value,
-                        'target': '#to'
-                    })
-                } break;
-            
-                case 'fn': {
-                    coderator.toFn({
-                        'value': value,
-                        'target': '#to'
-                    })
-                    break;
-                }
+            },
 
-                // Map<String, FocusNode> mapNode = {'key': FocusNode()};
-                default: {
-                    coderator.toMFn({
-                        'value': value,
-                        'target': '#to'
-                    })
-                    break;
+            methods: {
+                camelize(dasherizedStr) {
+                    return dasherizedStr
+                        .replace(/_([a-zA-Z])/g, function (m1, m2) {
+                            return m2.toUpperCase()
+                        });
+                },
+
+                copyToClipboard(id){
+                    let range = document.createRange();
+                    range.selectNode(document.getElementById(id));
+                    window.getSelection().removeAllRanges(); // clear current selection
+                    window.getSelection().addRange(range); // to select text
+                    document.execCommand("copy");
+                    window.getSelection().removeAllRanges();// to deselect
+
+                    this.message = 'Berhasil disalin!'
+                },
+
+                convertor() {
+                    try {
+
+                        if(this.plainText.trim() == ''){
+                            this.result = ''
+                            return
+                        }
+
+                        let result = '', prefix = ''
+                        let split = this.plainText.replace(/ /g, '').replace(/,\s*$/, "").split(',')
+
+                        switch (this.optionSelected) {
+                            case 'Map':
+                                for (let i = 0; i < split.length; i++) {
+                                    let str = `"${split[i]}": ${this.camelize(split[i])}.text, `
+                                    result += str
+                                }
+
+                                prefix = this.isUseVar ? 'var ' : 'Map<String, dynamic>'
+                                this.result = `${prefix} map = {${result.replace(/,\s*$/, "")}};`
+                                break;
+
+                            case 'TextEditingController':
+                                for (let i = 0; i < split.length; i++) {
+                                    let str = `${this.camelize(split[i])} = TextEditingController(), `
+                                    result += str
+                                }
+
+                                prefix = this.isUseVar ? 'var ' : 'TextEditingController'
+                                this.result = `${prefix} ${result.replace(/,\s*$/, "")};`
+                                break;
+
+                            case 'FocusNode':
+                                for (let i = 0; i < split.length; i++) {
+                                    let str = `${this.camelize(split[i])}Node = FocusNode(), `
+                                    result += str
+                                }
+
+                                prefix = this.isUseVar ? 'var ' : 'FocusNode'
+                                this.result = `${prefix} ${result.replace(/,\s*$/, "")};`
+                                break;
+
+                            case 'Map TextEditingController':
+                                for (let i = 0; i < split.length; i++) {
+                                    let str = `"${split[i]}": TextEditingController(), `
+                                    result += str
+                                }
+
+                                prefix = this.isUseVar ? 'var ' : 'Map<String, TextEditingController>'
+                                this.result = `${prefix} mapTec = {${result.replace(/,\s*$/, "")}};`
+                                break;
+
+                            case 'Map FocusNode':
+                                for (let i = 0; i < split.length; i++) {
+                                    let str = `"${split[i]}": FocusNode(), `
+                                    result += str
+                                }
+
+                                prefix = this.isUseVar ? 'var ' : 'Map<String, FocusNode>'
+                                this.result = `${prefix} mapNode = {${result.replace(/,\s*$/, "")}};`
+                                break;
+
+                            case 'GetX Builder':
+                                let controller = this.plainText.trim()
+
+                                this.result = `
+                                    GetBuilder<${controller}>(\t
+                                        id: "controller_id",
+                                        init: ${controller}(),
+                                        builder: (state) => Container()
+                                    )
+                                `
+                                break;
+                        }
+
+                    } catch (error) {
+                        console.log(`-- ${error}`)
+                    }
+                }
+            },
+
+            mounted() {
+                document.querySelector('#from').focus()
+            },
+
+            watch: {
+                optionSelected: function (_) {
+                    document.querySelector('#from').focus()
+                    this.convertor()
+
+                    this.placeholder = 'Ketik sesuatu (eg: product_name, email, etc...)'
+                    this.message = ''
+
+                    if(_ == 'GetX Builder'){
+                        this.placeholder = 'Ketik nama controller (eg: UserController)'
+                    }
+                },
+
+                plainText: function (_) {
+                    this.convertor()
+                    this.message = ''
+                },
+
+                isUseVar: function(_){
+                    this.convertor()
+                    this.message = ''
                 }
             }
-        }
-        
-        // add event to textarea
-        document.querySelector('#from').addEventListener('keyup', function() {
-            convertTo(this.value)
-            if(this.value.toString().trim() == '') document.querySelector('#to').innerHTML = ''
         })
+        // let coderator = new Coderator(),
+        //     type = 'map'
 
-        copyToClipboard = (id) => {
-            let range = document.createRange();
-            range.selectNode(document.getElementById(id));
-            window.getSelection().removeAllRanges(); // clear current selection
-            window.getSelection().addRange(range); // to select text
-            document.execCommand("copy");
-            window.getSelection().removeAllRanges();// to deselect
-        }
+        // // add event to checkbox
+        // document.querySelectorAll('.form-check-input').forEach(el => {
+        //     el.addEventListener('click', function(){
+        //         type = this.value
 
-        _clear = () => {
-            let from = document.querySelector('#from')
-            document.querySelector('#to').innerHTML = ''
+        //         let from = document.querySelector('#from').value
+        //         if(from.toString().trim() != '') convertTo(from)
+        //     })
+        // })
 
-            from.value = ''
-            from.focus()
-        }
+        // convertTo = (value) => {
+        //     switch (type) {
+        //         case 'map': {
+        //             coderator.toMap({
+        //                 'value': value,
+        //                 'target': '#to'
+        //             })
 
+        //             break;
+        //         }
 
+        //         case 'tec': {
+        //             coderator.toTec({
+        //                 'value': value,
+        //                 'target': '#to'
+        //             })
+        //         } break;
+
+        //         case 'fn': {
+        //             coderator.toFn({
+        //                 'value': value,
+        //                 'target': '#to'
+        //             })
+        //             break;
+        //         }
+
+        //         // Map<String, FocusNode> mapNode = {'key': FocusNode()};
+        //         default: {
+        //             coderator.toMFn({
+        //                 'value': value,
+        //                 'target': '#to'
+        //             })
+        //             break;
+        //         }
+        //     }
+        // }
+
+        // // add event to textarea
+        // document.querySelector('#from').addEventListener('keyup', function() {
+        //     convertTo(this.value)
+        //     if(this.value.toString().trim() == '') document.querySelector('#to').innerHTML = ''
+        // })
+
+        // copyToClipboard = (id) => {
+        //     let range = document.createRange();
+        //     range.selectNode(document.getElementById(id));
+        //     window.getSelection().removeAllRanges(); // clear current selection
+        //     window.getSelection().addRange(range); // to select text
+        //     document.execCommand("copy");
+        //     window.getSelection().removeAllRanges();// to deselect
+        // }
+
+        // _clear = () => {
+        //     let from = document.querySelector('#from')
+        //     document.querySelector('#to').innerHTML = ''
+
+        //     from.value = ''
+        //     from.focus()
+        // }
     </script>
 </body>
+
 </html>
