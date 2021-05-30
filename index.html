@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coderator</title>
+    <link rel="shortcut icon" href="img/logo.png" type="image/x-icon">
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
 
@@ -32,24 +33,23 @@
 
             <div class="row">
                 <div class="col-lg-6">
-                    <textarea id="from" class="form-control" v-model="plainText"
-                        :placeholder="placeholder"></textarea>
+                    <textarea id="from" class="form-control" v-model="plainText" :placeholder="placeholder"></textarea>
                     <div>
-                        <button class="btn btn-outline-danger my-3" :disabled="plainText == ''" @click="plainText = ''"> <i
-                                class="la la-lg la-times mr-1"></i> Bersihkan</button>
+                        <button class="btn btn-outline-danger my-3" :disabled="plainText == ''" @click="plainText = ''">
+                            <i class="la la-lg la-times mr-1"></i> Bersihkan</button>
 
-                                <label class="form-check form-switch ml-3" style="display: inline-block">
-                                    <input class="form-check-input" type="checkbox" v-model="isUseVar">
-                                    <span class="form-check-label">Use Var</span>
-                                  </label>
+                        <label class="form-check form-switch ml-3" style="display: inline-block">
+                            <input class="form-check-input" type="checkbox" v-model="isUseVar">
+                            <span class="form-check-label">Use Var</span>
+                        </label>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div id="to" v-text="result"></div>
-                    <button class="btn btn-outline-primary my-3" :disabled="result == ''" @click="copyToClipboard('to')"> <i
-                            class="la la-lg la-copy mr-1"></i> Salin Kode</button>
+                    <button class="btn btn-outline-primary my-3" :disabled="result == ''"
+                        @click="copyToClipboard('to')"> <i class="la la-lg la-copy mr-1"></i> Salin Kode</button>
 
-                            <span class="text-muted ml-3" v-html="message"></span>
+                    <span class="text-muted ml-3" v-html="message"></span>
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@
                 return {
                     options: [
                         'Map', 'TextEditingController', 'FocusNode', 'Map TextEditingController',
-                        'Map FocusNode','GetX Builder'
+                        'Map FocusNode', 'GetX Builder', 'GetX Put'
                     ],
 
                     optionSelected: 'Map',
@@ -87,13 +87,13 @@
                         });
                 },
 
-                copyToClipboard(id){
+                copyToClipboard(id) {
                     let range = document.createRange();
                     range.selectNode(document.getElementById(id));
                     window.getSelection().removeAllRanges(); // clear current selection
                     window.getSelection().addRange(range); // to select text
                     document.execCommand("copy");
-                    window.getSelection().removeAllRanges();// to deselect
+                    window.getSelection().removeAllRanges(); // to deselect
 
                     this.message = 'Berhasil disalin!'
                 },
@@ -101,12 +101,13 @@
                 convertor() {
                     try {
 
-                        if(this.plainText.trim() == ''){
+                        if (this.plainText.trim() == '') {
                             this.result = ''
                             return
                         }
 
-                        let result = '', prefix = ''
+                        let result = '',
+                            prefix = ''
                         let split = this.plainText.replace(/ /g, '').replace(/,\s*$/, "").split(',')
 
                         switch (this.optionSelected) {
@@ -160,7 +161,7 @@
                                 this.result = `${prefix} mapNode = {${result.replace(/,\s*$/, "")}};`
                                 break;
 
-                            case 'GetX Builder':
+                            case 'GetX Builder': {
                                 let controller = this.plainText.trim()
 
                                 this.result = `
@@ -170,6 +171,14 @@
                                         builder: (state) => Container()
                                     )
                                 `
+                            }
+                                break;
+
+                            case 'GetX Put':
+                                let plainText = this.plainText.trim().split(' ').join('_')
+                                let controller = this.camelize(plainText.replace(/\b[a-z]/g, (l) => l.toUpperCase()));
+
+                                this.result = `final _${this.camelize(plainText)}Ctrl = Get.put(${controller}Controller());`
                                 break;
                         }
 
@@ -191,8 +200,10 @@
                     this.placeholder = 'Ketik sesuatu (eg: product_name, email, etc...)'
                     this.message = ''
 
-                    if(_ == 'GetX Builder'){
+                    if (_ == 'GetX Builder'){
                         this.placeholder = 'Ketik nama controller (eg: UserController)'
+                    }else if(_ == 'GetX Put'){
+                        this.placeholder = 'Ketik sesuatu (eg: detail product, etc...)'
                     }
                 },
 
@@ -201,7 +212,7 @@
                     this.message = ''
                 },
 
-                isUseVar: function(_){
+                isUseVar: function (_) {
                     this.convertor()
                     this.message = ''
                 }
